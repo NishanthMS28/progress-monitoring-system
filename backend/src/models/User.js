@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true, minlength: 6 },
     role: { type: String, enum: ['owner', 'customer'], default: 'customer' },
-    projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' }
+    projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
+    emailNotifications: { type: Boolean, default: true }
   },
   { timestamps: true }
 );

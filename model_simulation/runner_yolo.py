@@ -8,7 +8,11 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-IMAGES_DIR = Path(os.environ.get("IMAGES_DIR", "/Users/nishanth/Documents/Parking/Claude App/images"))
+IMAGES_DIR = Path(os.environ.get("IMAGES_DIR"))
+if not IMAGES_DIR or not IMAGES_DIR.exists():
+    print("❌ ERROR: IMAGES_DIR environment variable is not set or directory does not exist!")
+    print("Please set IMAGES_DIR in your .env file to the absolute path of your images directory.")
+    sys.exit(1)
 ROOT = Path(__file__).resolve().parent
 OUTPUT_DIR = ROOT / "output"
 STATE_PATH = OUTPUT_DIR / "state.json"

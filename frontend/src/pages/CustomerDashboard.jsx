@@ -75,8 +75,8 @@ const CustomerDashboard = () => {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">Welcome, {user?.name}</h1>
-              <p className="text-gray-600 mt-1">{stats?.project?.name || 'Your Project'}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Welcome, {user?.name}</h1>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">{stats?.project?.name || 'Your Project'}</p>
             </div>
             <button onClick={handleRefresh} disabled={refreshing} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50">
               <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -84,7 +84,7 @@ const CustomerDashboard = () => {
             </button>
           </div>
         </motion.div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <DashboardCard title="Current Progress" value={stats?.currentProgress || 0} subtitle={`of ${stats?.project?.totalUnits || 0} units`} icon={<TrendingUp className="w-6 h-6" />} color="blue" />
           <DashboardCard title="Completion" value={`${stats?.completionPercentage || 0}%`} subtitle="Total completion" icon={<CheckCircle className="w-6 h-6" />} color="green" />
           <DashboardCard title="Status" value={<StatusBadge status={stats?.currentStatus} />} subtitle={`Deviation: ${stats?.averageDeviation >= 0 ? '+' : ''}${Math.round(stats?.averageDeviation || 0)}`} icon={<AlertCircle className="w-6 h-6" />} color="purple" />
@@ -122,8 +122,8 @@ const CustomerDashboard = () => {
             <Calendar className="w-5 h-5 text-purple-600" />
             <h2 className="text-xl font-bold text-gray-800">Recent History</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Time</th>
@@ -181,7 +181,7 @@ const CustomerDashboard = () => {
             setImageError(false);
           }}
         >
-          <div 
+          <div
             className="relative max-w-5xl max-h-[95vh] bg-gray-900 rounded-lg overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >

@@ -13,6 +13,8 @@ const OwnerDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [overlayData, setOverlayData] = useState({ stats: null, chart: null, history: [] });
+  const [viewingImage, setViewingImage] = useState(null);
+  const [imageError, setImageError] = useState(false);
   const [overlayLoading, setOverlayLoading] = useState(false);
 
   useEffect(() => {
@@ -89,7 +91,7 @@ const OwnerDashboard = () => {
             </button>
           </div>
         </motion.div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <DashboardCard title="Total Projects" value={overview?.summary?.totalProjects || 0} subtitle="Active projects" icon={<BarChart3 className="w-6 h-6" />} color="blue" />
           <DashboardCard title="On Track" value={overview?.summary?.onTrack || 0} subtitle="Projects ahead/on-time" icon={<CheckCircle className="w-6 h-6" />} color="green" />
           <DashboardCard title="Delayed" value={overview?.summary?.delayed || 0} subtitle="Projects behind schedule" icon={<AlertTriangle className="w-6 h-6" />} color="red" />
@@ -102,8 +104,8 @@ const OwnerDashboard = () => {
               <h2 className="text-xl font-bold text-gray-800">All Projects</h2>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <table className="w-full min-w-[800px]">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Project</th>
@@ -113,6 +115,7 @@ const OwnerDashboard = () => {
                   <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Status</th>
                   <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Deviation</th>
                   <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Last Update</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Email Alerts</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,11 +143,56 @@ const OwnerDashboard = () => {
                     <td className="py-4 px-6 cursor-pointer" onClick={() => openProjectOverlay(project.projectId)}><StatusBadge status={project.status} size="sm" /></td>
                     <td className="py-4 px-6 cursor-pointer" onClick={() => openProjectOverlay(project.projectId)}><span className={`font-semibold ${project.deviation >= 0 ? 'text-green-600' : 'text-red-600'}`}>{project.deviation >= 0 ? '+' : ''}{project.deviation}</span></td>
                     <td className="py-4 px-6 text-sm text-gray-600 cursor-pointer" onClick={() => openProjectOverlay(project.projectId)}>{project.lastUpdate ? new Date(project.lastUpdate).toLocaleString() : 'N/A'}</td>
+                    <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const newValue = !project.ownerEmailNotifications;
+
+                            // Optimistically update UI
+                            setOverview(prev => ({
+                              ...prev,
+                              projects: prev.projects.map(p =>
+                                p.projectId === project.projectId
+                                  ? { ...p, ownerEmailNotifications: newValue }
+                                  : p
+                              )
+                            }));
+
+                            const token = localStorage.getItem('token');
+                            const res = await fetch(`/api/projects/${project.projectId}/preferences`, {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                              },
+                              body: JSON.stringify({ ownerEmailNotifications: newValue })
+                            });
+
+                            if (!res.ok) {
+                              // Revert on error
+                              loadOverview();
+                            }
+                          } catch (err) {
+                            console.error('Failed to toggle project notifications', err);
+                            // Revert on error
+                            loadOverview();
+                          }
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${project.ownerEmailNotifications !== false ? 'bg-purple-600' : 'bg-gray-200'
+                          }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${project.ownerEmailNotifications !== false ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                        />
+                      </button>
+                    </td>
                   </motion.tr>
                 ))}
                 {(!overview?.projects || overview.projects.length === 0) && (
                   <tr>
-                    <td colSpan="7" className="py-12 text-center text-gray-500">No projects found</td>
+                    <td colSpan="8" className="py-12 text-center text-gray-500">No projects found</td>
                   </tr>
                 )}
               </tbody>
@@ -188,6 +236,7 @@ const OwnerDashboard = () => {
                             <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Expected</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Deviation</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">View</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -202,6 +251,24 @@ const OwnerDashboard = () => {
                                   {entry.deviation >= 0 ? '+' : ''}{entry.deviation}
                                 </span>
                               </td>
+                              <td className="py-3 px-4 text-sm">
+                                {entry.imagePath ? (
+                                  <button
+                                    title="View image"
+                                    onClick={() => {
+                                      const imageUrl = `http://localhost:5000/uploads/${entry.imagePath}`;
+                                      console.log('Opening image:', imageUrl);
+                                      setImageError(false);
+                                      setViewingImage(imageUrl);
+                                    }}
+                                    className="text-purple-600 hover:text-purple-800 transition cursor-pointer text-lg"
+                                  >
+                                    👁️
+                                  </button>
+                                ) : (
+                                  <span className="text-gray-400">—</span>
+                                )}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -211,6 +278,66 @@ const OwnerDashboard = () => {
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image View Modal - Copied from CustomerDashboard */}
+      {viewingImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] p-4"
+          onClick={() => {
+            setViewingImage(null);
+            setImageError(false);
+          }}
+        >
+          <div
+            className="relative max-w-5xl max-h-[95vh] bg-gray-900 rounded-lg overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setViewingImage(null);
+                setImageError(false);
+              }}
+              className="absolute top-4 right-4 z-10 bg-red-500 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-red-600 transition text-xl font-bold shadow-lg"
+            >
+              ✕
+            </button>
+            {imageError ? (
+              <div className="p-20 text-center">
+                <p className="text-white text-xl mb-4">Image not available</p>
+                <p className="text-gray-400 text-sm mb-4">URL: {viewingImage}</p>
+                <button
+                  onClick={() => {
+                    setViewingImage(null);
+                    setImageError(false);
+                  }}
+                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <div className="relative w-full h-full flex items-center justify-center p-4">
+                <img
+                  src={viewingImage}
+                  alt="Progress Image"
+                  className="max-w-full max-h-[90vh] object-contain rounded"
+                  onLoad={() => {
+                    console.log('Image loaded successfully:', viewingImage);
+                    setImageError(false);
+                  }}
+                  onError={(e) => {
+                    console.error('Image failed to load:', viewingImage);
+                    setImageError(true);
+                  }}
+                />
+                <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded text-sm">
+                  {viewingImage}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

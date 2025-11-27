@@ -8,6 +8,7 @@ const projectSchema = new mongoose.Schema(
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    ownerEmailNotifications: { type: Boolean, default: true },
     schedule: [
       {
         timestamp: { type: Date, required: true },

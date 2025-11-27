@@ -1,293 +1,206 @@
-# 🏭 Automated Progress Monitoring System
+# Progress Monitoring System
 
-A complete MERN stack application for monitoring manufacturing progress through periodic image analysis. The system uses YOLO-based vehicle detection to track progress, compares it with predefined schedules, and sends automated email alerts to customers and owners.
+A full-stack MERN application for real-time construction/manufacturing progress tracking with AI-powered image analysis using YOLOv8.
 
-## 📋 Table of Contents
+## Features
 
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-  - [Mac Setup](#mac-setup)
-  - [Windows Setup](#windows-setup)
-- [Configuration](#configuration)
-  - [Environment Variables](#environment-variables)
-  - [Setting Up Real Customer and Owner Accounts](#setting-up-real-customer-and-owner-accounts)
-  - [Email Configuration](#email-configuration)
-- [Running the Application](#running-the-application)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [Troubleshooting](#troubleshooting)
-- [Deployment](#deployment)
+- 📊 **Real-time Progress Tracking** - Monitor project progress with live updates
+- 🤖 **AI-Powered Analysis** - YOLOv8 object detection for automated progress counting
+- 📧 **Email Notifications** - Customizable alerts for owners and customers
+- 👥 **Multi-User Support** - Separate dashboards for owners and customers
+- 📱 **Responsive Design** - Works on desktop, tablet, and mobile devices
+- 📈 **Visual Analytics** - Charts and graphs for progress visualization
+- 🖼️ **Image History** - View historical progress images
 
-## ✨ Features
+## Tech Stack
 
-- **Automated Progress Monitoring**: Image analysis every 5 minutes using YOLOv8
-- **Real-time Dashboards**: Separate interfaces for owners and customers
-- **Smart Status Tracking**: Automatically calculates ahead/on-time/delayed status
-- **Email Notifications**: Automated alerts with progress summaries and images
-- **Historical Analytics**: Track progress trends and deviations over time
-- **Role-based Access**: Owner and Customer roles with appropriate permissions
-- **Image Gallery**: View processed images with click-to-expand modal
+### Frontend
+- React.js
+- Tailwind CSS
+- Framer Motion (animations)
+- Recharts (data visualization)
+- Axios (API calls)
 
-## 📦 Prerequisites
+### Backend
+- Node.js & Express.js
+- MongoDB (database)
+- JWT (authentication)
+- Nodemailer (email notifications)
+- Node-cron (scheduled tasks)
 
-Before you begin, ensure you have the following installed:
+### AI/ML
+- Python 3.x
+- YOLOv8 (Ultralytics)
+- OpenCV
+- Pillow
 
-- **Node.js** (v16 or higher) - [Download](https://nodejs.org/)
-- **MongoDB** (v5.0 or higher) - [Download](https://www.mongodb.com/try/download/community)
-- **Python** (3.8 or higher) - [Download](https://www.python.org/downloads/)
+## Prerequisites
+
+### All Platforms
+- **Node.js** (v14 or higher) - [Download](https://nodejs.org/)
+- **MongoDB** (v4.4 or higher) - [Download](https://www.mongodb.com/try/download/community)
+- **Python** (v3.8 or higher) - [Download](https://www.python.org/downloads/)
+- **Git** - [Download](https://git-scm.com/downloads)
 - **Gmail Account** (for email notifications)
-- **Git** (optional, for cloning)
 
-## 🚀 Installation
 
-### Mac Setup
 
-#### 1. Install Homebrew (if not already installed)
+## Installation
+
+### 1. Clone the Repository
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+git clone https://github.com/NishanthMS28/progress-monitoring-system.git
+cd progress-monitoring-system
 ```
 
-#### 2. Install Node.js
+### 2. MongoDB Setup
 
+#### macOS
 ```bash
-brew install node
-node --version  # Verify installation (should show v16+)
-```
-
-#### 3. Install MongoDB
-
-```bash
+# Install via Homebrew
 brew tap mongodb/brew
 brew install mongodb-community
+
+# Start MongoDB
 brew services start mongodb-community
 ```
 
-Verify MongoDB is running:
-```bash
-mongosh
-# Type 'exit' to leave MongoDB shell
-```
-
-#### 4. Install Python
-
-```bash
-brew install python3
-python3 --version  # Verify installation
-```
-
-#### 5. Clone or Download the Project
-
-```bash
-cd ~/Documents
-git clone <your-repo-url> progress-monitoring-system
-cd progress-monitoring-system
-```
-
-### Windows Setup
-
-#### 1. Install Node.js
-
-1. Download from [nodejs.org](https://nodejs.org/)
-2. Run the installer and follow the prompts
-3. Verify installation:
-```cmd
-node --version
-npm --version
-```
-
-#### 2. Install MongoDB
-
-1. Download from [mongodb.com](https://www.mongodb.com/try/download/community)
-2. Run the installer (choose "Complete" installation)
-3. During installation, check "Install MongoDB as a Service"
-4. Verify installation:
-```cmd
-mongosh
-```
-
-#### 3. Install Python
-
-1. Download from [python.org](https://www.python.org/downloads/)
+#### Windows
+1. Download MongoDB from [official website](https://www.mongodb.com/try/download/community)
 2. Run the installer
-3. **Important**: Check "Add Python to PATH" during installation
-4. Verify installation:
-```cmd
-python --version
+3. MongoDB will start automatically as a service
+
+#### Linux (Ubuntu/Debian)
+```bash
+# Import MongoDB public key
+wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+
+# Add MongoDB repository
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+
+# Install MongoDB
+sudo apt-get update
+sudo apt-get install -y mongodb-org
+
+# Start MongoDB
+sudo systemctl start mongod
+sudo systemctl enable mongod
 ```
 
-#### 4. Clone or Download the Project
-
-```cmd
-cd C:\Users\YourName\Documents
-git clone <your-repo-url> progress-monitoring-system
-cd progress-monitoring-system
-```
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-#### 1. Backend Configuration
-
-Navigate to the backend directory and create a `.env` file:
+### 3. Backend Setup
 
 ```bash
 cd backend
+
+# Install dependencies
+npm install
+
+# Create .env file
 cp .env.example .env
 ```
 
-Edit `backend/.env` with your configuration:
+#### Configure Backend Environment Variables
 
-```env
-# Server
+Edit `backend/.env`:
+
+```bash
+# Server Configuration
 PORT=5000
 NODE_ENV=development
 
-# Database (local MongoDB)
+# Database
 MONGO_URI=mongodb://localhost:27017/progress_monitoring
 
-# JWT Secret (generate a random string)
-JWT_SECRET=your_very_secure_random_string_here_minimum_32_characters
+# JWT Secret (generate a secure random string)
+JWT_SECRET=your_super_secret_jwt_key_change_this_to_something_secure
 
-# Email Configuration (see Email Setup section below)
+# Email Configuration (Gmail App Password)
 EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_16_digit_app_password
+EMAIL_PASS=your_gmail_app_password
 
 # Frontend URL
 CLIENT_URL=http://localhost:3000
 
 # Model Configuration
 MODEL_OUTPUT_PATH=../model_simulation/output/progress_data.json
-IMAGES_DIR=/absolute/path/to/your/images/folder
-PYTHON_EXEC=python3
-
-# Real Customer Configuration (see section below)
-REAL_CUSTOMER_EMAIL=your_customer_email@gmail.com
-REAL_CUSTOMER_PASSWORD=YourSecurePassword123
-
-# Owner Account Configuration
-OWNER_EMAIL=your_owner_email@gmail.com
-OWNER_PASSWORD=YourSecurePassword123
-
-# Expected Progress Per Cycle
+IMAGES_DIR=/absolute/path/to/your/images/directory
 REAL_EXPECTED_PER_CYCLE=7
+
+# Python Environment
+PYTHON_EXEC=/absolute/path/to/progress-monitoring-system/model_simulation/.venv/bin/python
+
+# User Credentials for Seeding
+OWNER_EMAIL=owner@example.com
+OWNER_PASSWORD=SecureOwnerPassword123
+REAL_CUSTOMER_EMAIL=customer@example.com
+REAL_CUSTOMER_PASSWORD=SecureCustomerPassword123
 ```
 
-**Important Paths:**
-- **IMAGES_DIR**: Use absolute path to your images folder
-  - Mac: `/Users/YourName/Documents/images`
-  - Windows: `C:\Users\YourName\Documents\images`
+> **⚠️ IMPORTANT**: 
+> - `IMAGES_DIR` must be an **absolute path** to your images directory
+> - `PYTHON_EXEC` must be an **absolute path** to your Python virtual environment
 
-### Setting Up Real Customer and Owner Accounts
-
-The system uses environment variables to configure real customer and owner accounts. This allows you to use your own email addresses without hardcoding them in the source code.
-
-#### Step 1: Update `.env` File
-
-In `backend/.env`, set your real accounts:
-
-```env
-# Your real customer account (will receive progress updates)
-REAL_CUSTOMER_EMAIL=your_customer_email@gmail.com
-REAL_CUSTOMER_PASSWORD=YourSecurePassword123
-
-# Your real owner account (will receive all project updates)
-OWNER_EMAIL=your_owner_email@gmail.com
-OWNER_PASSWORD=YourSecurePassword123
-```
-
-#### Step 2: Seed the Database
-
-After setting the environment variables, seed the database:
-
-```bash
-cd backend
-npm run seed
-```
-
-This will create:
-- Owner account using `OWNER_EMAIL` and `OWNER_PASSWORD`
-- Customer 1 account using `REAL_CUSTOMER_EMAIL` and `REAL_CUSTOMER_PASSWORD`
-- Two additional demo customer accounts
-
-**Note**: If you don't set these environment variables, the system will use default demo accounts.
-
-### Email Configuration
-
-The system sends automated email notifications using Gmail. You need to set up a Gmail App Password (not your regular password).
-
-#### Step 1: Enable 2-Step Verification
+#### Gmail App Password Setup
 
 1. Go to [Google Account Security](https://myaccount.google.com/security)
-2. Enable "2-Step Verification" if not already enabled
+2. Enable **2-Step Verification** (required)
+3. Go to [App Passwords](https://myaccount.google.com/apppasswords)
+4. Generate a new app password for "Mail"
+5. Copy the 16-character password (remove spaces)
+6. Paste it in `EMAIL_PASS` in your `.env` file
 
-#### Step 2: Generate App Password
-
-1. Go to [App Passwords](https://myaccount.google.com/apppasswords)
-2. Select "Mail" as the app
-3. Select "Other (Custom name)" as the device
-4. Enter a name like "Progress Monitoring System"
-5. Click "Generate"
-6. Copy the 16-character password (it will look like: `abcd efgh ijkl mnop`)
-
-#### Step 3: Update `.env` File
-
-In `backend/.env`:
-
-```env
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASS=abcdefghijklmnop
-```
-
-**Important**: 
-- Use the Gmail account that generated the App Password
-- Remove any spaces from the App Password
-- Never commit your `.env` file to Git
-
-## 🎬 Running the Application
-
-### Step 1: Install Dependencies
-
-#### Backend
-
-```bash
-cd backend
-npm install
-```
-
-#### Frontend
+### 4. Frontend Setup
 
 ```bash
 cd ../frontend
+
+# Install dependencies
 npm install
 ```
 
-#### Model Simulation
+### 5. Model Simulation Setup
 
+#### macOS/Linux
 ```bash
 cd ../model_simulation
 
-# Mac/Linux: Create virtual environment
+# Create virtual environment
 python3 -m venv .venv
-source .venv/bin/activate
 
-# Windows: Create virtual environment
-python -m venv .venv
-.venv\Scripts\activate
+# Activate virtual environment
+source .venv/bin/activate  # macOS/Linux
 
-# Install Python dependencies
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Step 2: Set Up Images Folder
+#### Windows
+```bash
+cd ../model_simulation
 
-1. Create a folder with your images (e.g., `~/Documents/images` or `C:\Users\YourName\Documents\images`)
-2. Place your images (`.jpg`, `.jpeg`, `.png`, etc.) in this folder
-3. Update `IMAGES_DIR` in `backend/.env` with the absolute path to this folder
+# Create virtual environment
+python -m venv .venv
 
-### Step 3: Seed the Database
+# Activate virtual environment
+.venv\Scripts\activate  # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 6. Prepare Images Directory
+
+Create a directory for your images and update `IMAGES_DIR` in `.env`:
+
+```bash
+# Example
+mkdir -p /path/to/your/images
+```
+
+Place your images in this directory. The model will process them sequentially.
+
+### 7. Seed the Database
 
 ```bash
 cd backend
@@ -295,236 +208,277 @@ npm run seed
 ```
 
 This creates:
-- Owner account
-- Customer accounts
-- Sample projects
-- Clears any existing progress data (starts fresh)
+- 1 Owner account (using `OWNER_EMAIL` and `OWNER_PASSWORD`)
+- 3 Customer accounts (including one using `REAL_CUSTOMER_EMAIL` and `REAL_CUSTOMER_PASSWORD`)
+- 3 Sample projects
 
-### Step 4: Start MongoDB
+## Running the Application
 
-#### Mac
+You need to run **three** services simultaneously:
 
-```bash
-brew services start mongodb-community
-# Or manually:
-mongod --dbpath /usr/local/var/mongodb
-```
-
-#### Windows
-
-MongoDB should start automatically as a service. If not:
-
-```cmd
-net start MongoDB
-```
-
-### Step 5: Start All Services
-
-You'll need **4 terminal windows**:
-
-#### Terminal 1: Backend
-
+### Terminal 1: Backend
 ```bash
 cd backend
 npm run dev
 ```
+Backend runs on `http://localhost:5000`
 
-You should see:
-```
-🚀 Server running on port 5000
-📧 Email notifications enabled
-✅ MongoDB connected
-⏰ Progress monitoring active (5-minute intervals)
-```
-
-#### Terminal 2: Frontend
-
+### Terminal 2: Frontend
 ```bash
 cd frontend
 npm start
 ```
+Frontend runs on `http://localhost:3000`
 
-The browser should open automatically at `http://localhost:3000`
-
-#### Terminal 3: Model Simulation (Optional - runs automatically via backend)
-
-The backend automatically runs the model every 5 minutes. However, you can test it manually:
-
+### Terminal 3: Model Simulation
 ```bash
 cd model_simulation
+source .venv/bin/activate  # macOS/Linux
+# OR
+.venv\Scripts\activate  # Windows
 
-# Activate virtual environment
-# Mac/Linux:
-source .venv/bin/activate
-# Windows:
-.venv\Scripts\activate
-
-# Run once to test
 python runner_yolo.py
 ```
 
-#### Terminal 4: MongoDB (if not running as service)
+## Default Login Credentials
 
-Only needed if MongoDB isn't running as a service:
+After seeding, you can log in with:
 
-```bash
-# Mac
-mongod
+### Owner Account
+- **Email**: Value from `OWNER_EMAIL` in `.env`
+- **Password**: Value from `OWNER_PASSWORD` in `.env`
 
-# Windows
-mongod --dbpath "C:\data\db"
+### Customer Account
+- **Email**: Value from `REAL_CUSTOMER_EMAIL` in `.env`
+- **Password**: Value from `REAL_CUSTOMER_PASSWORD` in `.env`
+
+## Usage Guide
+
+### For Owners
+
+1. **Dashboard Overview**: View all projects, their status, and completion percentages
+2. **Project Management**: Click on any project to see detailed progress history
+3. **Email Notifications**: Toggle email alerts per project in the "Email Alerts" column
+4. **View Images**: Click the eye icon in the history table to view progress images
+
+### For Customers
+
+1. **Project Dashboard**: View your assigned project's progress
+2. **Progress Charts**: See visual representation of progress over time
+3. **Email Notifications**: Toggle email alerts in the navbar
+4. **Recent History**: View all progress updates with timestamps and images
+
+## Email Notification System
+
+### Customer Preferences
+- Toggle in the navbar controls ALL email notifications
+- When OFF: Customer receives no emails
+
+### Owner Preferences
+- Each project has its own toggle in the "All Projects" table
+- Control notifications per-project for granular management
+- When OFF for a project: Owner doesn't receive emails for THAT specific project
+
+## Adding New Projects/Customers
+
+### Option 1: Modify Seed Script
+
+Edit `backend/src/scripts/seed.js`:
+
+```javascript
+const customers = [
+  { name: 'Your Customer Name', email: 'customer@example.com', password: 'SecurePassword123' },
+  // Add more customers
+];
+
+const projects = [
+  {
+    name: 'Your Project Name',
+    description: 'Project description',
+    totalUnits: 1000,  // Total expected units
+    startDate: new Date('2024-01-01'),
+    endDate: new Date('2024-12-31'),
+    customerEmail: 'customer@example.com'
+  },
+  // Add more projects
+];
 ```
 
-### Step 6: Access the Application
+Then re-run:
+```bash
+npm run seed
+```
 
-1. Open browser: `http://localhost:3000`
-2. Login with your accounts:
-   - **Owner**: Use `OWNER_EMAIL` / `OWNER_PASSWORD` from `.env`
-   - **Customer**: Use `REAL_CUSTOMER_EMAIL` / `REAL_CUSTOMER_PASSWORD` from `.env`
+### Option 2: Manual Database Entry
 
-## 📁 Project Structure
+Use MongoDB Compass or mongosh to add documents directly to the `users` and `projects` collections.
+
+## Customizing Expected Progress
+
+### Per-Project Schedule
+Projects automatically generate a schedule based on `startDate`, `endDate`, and `totalUnits`.
+
+### Real Customer Baseline
+For the customer specified in `REAL_CUSTOMER_EMAIL`, the system uses `REAL_EXPECTED_PER_CYCLE` instead of the calculated schedule. This is useful for actual production tracking where you have a known baseline.
+
+Edit in `.env`:
+```bash
+REAL_EXPECTED_PER_CYCLE=7  # Expected units per cycle
+```
+
+## Using Your Own Model
+
+### Option 1: Replace YOLOv8 Model
+
+1. Place your YOLOv8 `.pt` file in `model_simulation/`
+2. Update `runner_yolo.py`:
+```python
+model = YOLO('your_model.pt')
+```
+
+### Option 2: Use Different Detection Logic
+
+Modify `model_simulation/runner_yolo.py`:
+
+```python
+def process_image(image_path):
+    # Your custom detection logic here
+    # Must return: count (int)
+    
+    # Example:
+    # count = your_detection_function(image_path)
+    
+    return count
+```
+
+The system expects:
+- Input: Image path
+- Output: Integer count of detected objects
+
+## Project Structure
 
 ```
 progress-monitoring-system/
-├── backend/
+├── backend/                 # Node.js/Express backend
 │   ├── src/
-│   │   ├── controllers/     # Request handlers
-│   │   ├── models/          # MongoDB schemas
-│   │   ├── routes/          # API routes
-│   │   ├── middleware/      # Auth, error handling
-│   │   ├── utils/           # Email, scheduling, parsing
-│   │   ├── config/          # Database configuration
-│   │   ├── scripts/         # Database seeding
-│   │   └── server.js        # Express app entry point
-│   ├── uploads/             # Processed images (created automatically)
-│   ├── .env.example         # Environment variables template
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/           # Dashboard pages
-│   │   ├── context/         # React context (Auth)
-│   │   ├── services/        # API service layer
-│   │   ├── App.js           # Main app component
-│   │   └── index.js         # React entry point
+│   │   ├── config/         # Database configuration
+│   │   ├── controllers/    # Route controllers
+│   │   ├── middleware/     # Auth middleware
+│   │   ├── models/         # Mongoose models
+│   │   ├── routes/         # API routes
+│   │   ├── scripts/        # Seed scripts
+│   │   └── utils/          # Utilities (email, scheduling)
+│   └── uploads/            # Uploaded images (gitignored)
+├── frontend/               # React frontend
 │   ├── public/
-│   └── package.json
-│
-├── model_simulation/
-│   ├── runner_yolo.py       # YOLO model runner
-│   ├── requirements.txt     # Python dependencies
-│   └── output/              # Model outputs (gitignored)
-│       ├── progress_data.json
-│       └── state.json
-│
-├── README.md                # This file
-├── .gitignore               # Git ignore rules
-└── docker-compose.yml       # Docker configuration (optional)
+│   └── src/
+│       ├── components/     # Reusable components
+│       ├── context/        # React context (auth)
+│       ├── pages/          # Page components
+│       └── services/       # API services
+├── model_simulation/       # Python AI model
+│   ├── output/            # Model outputs (gitignored)
+│   └── .venv/             # Python virtual env (gitignored)
+└── README.md
 ```
 
-## 📖 API Documentation
+## API Endpoints
 
 ### Authentication
-
-```http
-POST /api/auth/register
-POST /api/auth/login
-GET /api/auth/me (Protected)
-GET /api/auth/customers (Owner only)
-```
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/auth/me` - Get current user
+- `PUT /api/auth/profile` - Update user profile
 
 ### Progress
+- `GET /api/progress/overview` - Get all projects overview (owner)
+- `GET /api/progress/:projectId/latest` - Get latest progress
+- `GET /api/progress/:projectId/history` - Get progress history
+- `GET /api/progress/:projectId/stats` - Get project statistics
+- `GET /api/progress/:projectId/chart` - Get chart data
 
-```http
-GET /api/progress/latest/:projectId (Protected)
-GET /api/progress/history/:projectId (Protected)
-GET /api/progress/stats/:projectId (Protected)
-GET /api/progress/overview (Owner only)
-GET /api/progress/chart/:projectId (Protected)
+### Projects
+- `PUT /api/projects/:id/preferences` - Update project email preferences
+
+## Troubleshooting
+
+### MongoDB Connection Error
+```bash
+# Check if MongoDB is running
+# macOS
+brew services list
+
+# Linux
+sudo systemctl status mongod
+
+# Windows
+# Check Services app for "MongoDB"
 ```
 
-### Email
+### Email Not Sending
+1. Verify Gmail App Password is correct (no spaces)
+2. Check 2-Step Verification is enabled
+3. Check backend logs for email errors
+4. Verify email preferences are enabled (toggles are ON)
 
-```http
-POST /api/email/send (Owner only)
-GET /api/email/history/:projectId (Protected)
-POST /api/email/test (Owner only)
+### Model Not Processing Images
+1. Verify Python virtual environment is activated
+2. Check `IMAGES_DIR` path is correct and contains images
+3. Verify `PYTHON_EXEC` path in `.env`
+4. Check model_simulation logs for errors
+
+### Frontend Not Connecting to Backend
+1. Verify backend is running on port 5000
+2. Check `proxy` in `frontend/package.json` is `http://localhost:5000`
+3. Clear browser cache and restart frontend
+
+## Configuration Guide
+
+### Finding Absolute Paths
+
+You need absolute paths for `IMAGES_DIR` and `PYTHON_EXEC`. Here's how to find them:
+
+#### macOS/Linux
+**Images Directory**:
+```bash
+cd ~/path/to/images
+pwd
+# Copy the output
 ```
 
-## 🔍 Troubleshooting
+**Python Executable**:
+```bash
+cd model_simulation
+source .venv/bin/activate
+which python
+# Copy the output
+```
 
-### Backend won't start
+#### Windows
+**Images Directory**:
+1. Open File Explorer to your images folder
+2. Click the address bar
+3. Copy the path
 
-- **Check MongoDB**: Ensure MongoDB is running (`mongosh` should work)
-- **Check .env**: Verify `.env` file exists and has correct values
-- **Check Port**: Ensure port 5000 is not in use
-- **Check Logs**: Look for error messages in terminal
+**Python Executable**:
+```bash
+cd model_simulation
+.venv\Scripts\activate
+where python
+# Copy the output path
+```
 
-### Frontend connection issues
+## License
 
-- **Check Backend**: Ensure backend is running on port 5000
-- **Check CORS**: Verify `CLIENT_URL` in backend `.env` matches frontend URL
-- **Check API**: Test `http://localhost:5000/health` in browser
+This project is licensed under the MIT License.
 
-### Images not displaying
-
-- **Check Uploads Folder**: Verify `backend/uploads` folder exists and has images
-- **Check Path**: Verify `IMAGES_DIR` in `.env` is correct absolute path
-- **Check Console**: Open browser console (F12) for error messages
-- **Test Direct URL**: Try `http://localhost:5000/uploads/filename.jpg` directly
-
-### Emails not sending
-
-- **Check App Password**: Verify you're using Gmail App Password (16 characters), not regular password
-- **Check 2FA**: Ensure 2-Step Verification is enabled on Gmail
-- **Check .env**: Verify `EMAIL_USER` and `EMAIL_PASS` are correct
-- **Check Logs**: Look for email errors in backend terminal
-
-### Model not running
-
-- **Check Python**: Verify Python 3.8+ is installed
-- **Check Virtual Environment**: Ensure virtual environment is activated
-- **Check Dependencies**: Run `pip install -r requirements.txt`
-- **Check Images**: Verify images folder exists and has images
-- **Check Logs**: Look for errors in backend terminal
-
-### Database connection errors
-
-- **Check MongoDB**: Ensure MongoDB service is running
-- **Check URI**: Verify `MONGO_URI` in `.env` is correct
-- **Check Network**: Try `mongodb://127.0.0.1:27017/progress_monitoring`
-
-## 🚢 Deployment
-
-For production deployment, see [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-Key considerations:
-- Use MongoDB Atlas for database
-- Set secure `JWT_SECRET`
-- Use environment variables for all sensitive data
-- Set up proper CORS for your domain
-- Use a production email service (SendGrid, Mailgun, etc.)
-
-## 📝 License
-
-Feel free to use this project for your needs.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
-
-## 📧 Support
+## Support
 
 For issues and questions:
-- Check the [Troubleshooting](#troubleshooting) section
-- Review API documentation
-- Check server logs for error messages
+- Open an issue on [GitHub](https://github.com/NishanthMS28/progress-monitoring-system/issues)
+- Check existing issues for solutions
 
----
+## Acknowledgments
 
-**Built with ❤️ for modern manufacturing monitoring**
+- YOLOv8 by Ultralytics
+- MongoDB, Express, React, Node.js communities

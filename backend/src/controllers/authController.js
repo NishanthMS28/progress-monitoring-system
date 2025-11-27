@@ -18,6 +18,7 @@ exports.register = async (req, res) => {
       email: user.email,
       role: user.role,
       projectId: user.projectId,
+      emailNotifications: user.emailNotifications,
       token: generateToken(user._id)
     });
   } catch (err) {
@@ -38,6 +39,7 @@ exports.login = async (req, res) => {
       email: user.email,
       role: user.role,
       projectId: user.projectId,
+      emailNotifications: user.emailNotifications,
       token: generateToken(user._id)
     });
   } catch (err) {
@@ -58,6 +60,31 @@ exports.getCustomers = async (req, res) => {
   try {
     const customers = await User.find({ role: 'customer' }).populate('projectId').select('-password');
     return res.json(customers);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (req.body.emailNotifications !== undefined) {
+      user.emailNotifications = req.body.emailNotifications;
+    }
+
+    const updatedUser = await user.save();
+
+    return res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      projectId: updatedUser.projectId,
+      emailNotifications: updatedUser.emailNotifications,
+      token: generateToken(updatedUser._id)
+    });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }

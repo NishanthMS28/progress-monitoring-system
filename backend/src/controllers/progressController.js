@@ -30,7 +30,7 @@ exports.getStats = async (req, res) => {
     if (!project) return res.status(404).json({ message: 'Project not found' });
     const latest = await Progress.findOne({ project: projectId }).sort({ timestamp: -1 });
     const currentProgress = latest ? latest.progressCount : 0;
-    
+
     // For real customer, use the per-cycle baseline; for others, use full schedule
     const realCustomerEmail = process.env.REAL_CUSTOMER_EMAIL || 'customer1@company.com';
     const baselineExpected = Number(process.env.REAL_EXPECTED_PER_CYCLE || 7);
@@ -40,7 +40,7 @@ exports.getStats = async (req, res) => {
     } else {
       expectedProgress = latest ? latest.expectedCount : project.getExpectedCount(new Date());
     }
-    
+
     const completionPercentage = project.totalUnits ? Math.round((currentProgress / project.totalUnits) * 100) : 0;
     const averageDeviationAgg = await Progress.aggregate([
       { $match: { project: project._id } },
@@ -67,29 +67,34 @@ exports.getOverview = async (req, res) => {
     let onTrack = 0;
     let delayed = 0;
     let totalCompletion = 0;
-    for (const p of projects) {
-      const latest = await Progress.findOne({ project: p._id }).sort({ timestamp: -1 });
-      const current = latest ? latest.progressCount : 0;
-      const expected = p.getExpectedCount(new Date());
-      const completion = p.totalUnits ? Math.round((current / p.totalUnits) * 100) : 0;
-      const status = latest ? latest.status : 'unknown';
+
+    for (const proj of projects) {
+      const latestProgress = await Progress.findOne({ project: proj._id }).sort({ timestamp: -1 });
+      const current = latestProgress ? latestProgress.progressCount : 0;
+      const expected = proj.getExpectedCount(new Date());
+      const completion = proj.totalUnits ? Math.round((current / proj.totalUnits) * 100) : 0;
+      const status = latestProgress ? latestProgress.status : 'unknown';
+
       if (status === 'delayed') delayed++;
       else onTrack++;
       totalCompletion += completion;
+
       data.push({
-        projectId: p._id,
-        projectName: p.name,
-        totalUnits: p.totalUnits,
-        customerName: p.customer ? p.customer.name : 'Unassigned',
-        customerEmail: p.customer ? p.customer.email : '',
+        projectId: proj._id,
+        projectName: proj.name,
+        customerName: proj.customer?.name || 'N/A',
+        customerEmail: proj.customer?.email || 'N/A',
+        totalUnits: proj.totalUnits,
         currentProgress: current,
         expectedProgress: expected,
         completionPercentage: completion,
         status,
-        deviation: latest ? latest.deviation : 0,
-        lastUpdate: latest ? latest.timestamp : null
+        deviation: latestProgress ? latestProgress.deviation : 0,
+        lastUpdate: latestProgress ? latestProgress.timestamp : null,
+        ownerEmailNotifications: proj.ownerEmailNotifications !== false
       });
     }
+
     const summary = {
       totalProjects: projects.length,
       onTrack,
@@ -116,4 +121,3 @@ exports.getChartData = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
-

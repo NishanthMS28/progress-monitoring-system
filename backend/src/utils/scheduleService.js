@@ -24,13 +24,17 @@ async function processProgressData() {
     const latestImageField = latest.imagePath || latest.image || '';
     if (latestImageField) {
       try {
-        const backendUploads = path.resolve(__dirname, '../uploads');
+        const backendUploads = path.resolve(__dirname, '../../uploads');
         if (!fs.existsSync(backendUploads)) fs.mkdirSync(backendUploads, { recursive: true });
-        
+
         // Resolve image path - runner_yolo.py writes "images/filename.jpg"
-        const imagesBase = process.env.IMAGES_DIR || '/Users/nishanth/Documents/Parking/Claude App/images';
+        const imagesBase = process.env.IMAGES_DIR;
+        if (!imagesBase) {
+          console.error('❌ IMAGES_DIR environment variable is not set!');
+          return;
+        }
         let sourceAbs = '';
-        
+
         // Try direct path first (if imagePath is already absolute or relative to images folder)
         if (latestImageField.startsWith('images/')) {
           // Remove "images/" prefix and join with actual images directory
@@ -39,13 +43,13 @@ async function processProgressData() {
         } else {
           sourceAbs = path.join(imagesBase, latestImageField);
         }
-        
+
         // Fallback: try other possible locations
         if (!fs.existsSync(sourceAbs)) {
           const possibleRoots = [
             path.resolve(__dirname, '../../model_simulation'),
             path.resolve(process.cwd(), 'model_simulation'),
-            path.resolve('/Users/nishanth/Documents/Parking/Claude App'),
+            path.resolve(__dirname, '../../..'),
           ];
           for (const root of possibleRoots) {
             const candidates = [
@@ -60,7 +64,7 @@ async function processProgressData() {
             if (fs.existsSync(sourceAbs)) break;
           }
         }
-        
+
         if (sourceAbs && fs.existsSync(sourceAbs)) {
           const filename = `${Date.now()}_${path.basename(sourceAbs)}`;
           const dest = path.join(backendUploads, filename);
@@ -132,7 +136,7 @@ function startProgressMonitoring() {
     // Execute fast YOLO runner (avoids papermill fragility). Set IMAGES_DIR via env if needed.
     const scriptCwd = path.resolve(__dirname, '../../../model_simulation');
     const pyExec = process.env.PYTHON_EXEC || 'python3';
-    const env = { ...process.env, IMAGES_DIR: process.env.IMAGES_DIR || '/Users/nishanth/Documents/Parking/Claude App/images' };
+    const env = { ...process.env };
     const py = spawn(pyExec, ['runner_yolo.py'], { cwd: scriptCwd, env });
     py.on('close', () => {
       processProgressData();

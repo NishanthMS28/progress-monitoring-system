@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const progressRoutes = require('./routes/progressRoutes');
 const emailRoutes = require('./routes/emailRoutes');
+const projectRoutes = require('./routes/projectRoutes');
 const scheduleService = require('./utils/scheduleService');
 
 const app = express();
@@ -41,11 +42,11 @@ app.use('/uploads', express.static(uploadsDir, {
 app.get('/uploads/:filename', (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(uploadsDir, filename);
-  
+
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'File not found', filename, uploadsDir });
   }
-  
+
   res.sendFile(filePath, (err) => {
     if (err) {
       console.error('Error sending file:', err);
@@ -61,8 +62,8 @@ app.get('/api/debug/uploads', (req, res) => {
       return res.json({ error: 'Uploads directory does not exist', uploadsDir });
     }
     const files = fs.readdirSync(uploadsDir).filter(f => !f.startsWith('.'));
-    res.json({ 
-      uploadsDir, 
+    res.json({
+      uploadsDir,
       exists: fs.existsSync(uploadsDir),
       fileCount: files.length,
       files: files.map(f => {
@@ -84,6 +85,7 @@ app.get('/api/debug/uploads', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/projects', projectRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
